@@ -129,6 +129,6 @@ Note that this will cause js-mode to get loaded the first time
 you save any file, kind of defeating the point of autoloading."
 
   (interactive)
-  (when (eq major-mode 'js-mode) (jsfmt)))
+  (when (memq major-mode '(js-mode js2-mode js3-mode)) (jsfmt)))
 
 (provide 'jsfmt)
