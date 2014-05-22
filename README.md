@@ -7,6 +7,12 @@ this is basically a clone of the necessary code from `go-mode` for running `gofm
 
 ## Installing
 
+Install [jsfmt](https://rdio.github.io/jsfmt):
+
+```bash
+npm install -g jsfmt
+```
+
 Download and place `jsfmt.el` in `~/.emacs.d`
 
 Modify your `~/.emacs` file to include:
