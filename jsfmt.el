@@ -1,11 +1,23 @@
-;; jsfmt.el -- Interface to jsfmt command for javascript files
-;; https://rdio.github.io/jsfmt
+;; jsfmt.el --- Interface to jsfmt command for javascript files
 
-;; Version 0.1.0
+;; Copyright (C) 2014 Brett Langdon
+
+;; Author: Brett Langdon <brett@blangdon.com>
+;; URL: https://github.com/brettlangdon/jsfmt.el
+;; Version: 0.1.0
+
+;; License that can be found in the LICENSE section in README.
+
+;;; Commentary:
 
 ;; this is basically a copy of the necessary parts from
 ;; go-mode version 20131222, so all credit goes to
 ;; The Go Authors
+;;
+;; See also
+;;   `jsfmt': https://rdio.github.io/jsfmt
+
+;;; Code:
 
 (defcustom jsfmt-command "jsfmt"
   "The 'jsfmt' command. https://rdio.github.io/jsfmt"
@@ -76,6 +88,7 @@ buffer."
              (t
               (error "invalid rcs patch or internal error in js--apply-rcs-patch")))))))))
 
+;;;###autoload
 (defun jsfmt ()
   "Formats the current buffer according to the jsfmt tool."
 
@@ -121,6 +134,7 @@ buffer."
     (compilation-mode)
     (display-buffer errbuf)))
 
+;;;###autoload
 (defun jsfmt-before-save ()
   "Add this to .emacs to run jsfmt on the current buffer when saving:
  (add-hook 'before-save-hook 'jsfmt-before-save).
@@ -132,3 +146,5 @@ you save any file, kind of defeating the point of autoloading."
   (when (memq major-mode '(js-mode js2-mode js3-mode)) (jsfmt)))
 
 (provide 'jsfmt)
+
+;;; jsfmt.el ends here
