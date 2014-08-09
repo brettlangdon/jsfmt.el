@@ -4,7 +4,7 @@
 
 ;; Author: Brett Langdon <brett@blangdon.com>
 ;; URL: https://github.com/brettlangdon/jsfmt.el
-;; Version: 0.1.0
+;; Version: 0.2.0
 
 ;; License that can be found in the LICENSE section in README.
 
