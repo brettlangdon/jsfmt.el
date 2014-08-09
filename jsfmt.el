@@ -88,12 +88,12 @@ buffer."
              (t
               (error "invalid rcs patch or internal error in js--apply-rcs-patch")))))))))
 
-;;;###autoload
-(defun jsfmt ()
+(defun run-jsfmt (save &optional ast &optional)
   "Formats the current buffer according to the jsfmt tool."
-
   (interactive)
-  (let ((tmpfile (make-temp-file "jsfmt" nil ".js"))
+  (let ((tmpfile (make-temp-file "jsfmt" nil (if ast
+                                                 ".ast"
+                                               ".js")))
         (patchbuf (get-buffer-create "*Jsfmt patch*"))
         (errbuf (get-buffer-create "*Jsfmt Errors*"))
         (coding-system-for-read 'utf-8)
@@ -108,9 +108,18 @@ buffer."
     (write-region nil nil tmpfile)
 
     ;; We're using errbuf for the mixed stdout and stderr output. This
-    ;; is not an issue because jsfmt -w does not produce any stdout
+    ;; is not an issue because jsfmt --write does not produce any stdout
     ;; output in case of success.
-    (if (zerop (call-process jsfmt-command nil errbuf nil "-w" tmpfile))
+    (if save
+        (if ast
+            (setq success (zerop (call-process jsfmt-command nil errbuf nil "--save-ast" "--write" tmpfile)))
+          (setq success (zerop (call-process jsfmt-command nil errbuf nil "--write" tmpfile))))
+      (if ast
+          (setq success (zerop (call-process jsfmt-command nil errbuf nil "--ast" "--write" tmpfile)))
+        (setq success nil))
+      (setq success nil))
+
+    (if 'success
         (if (zerop (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-" tmpfile))
             (progn
               (kill-buffer errbuf)
@@ -124,6 +133,24 @@ buffer."
     (kill-buffer patchbuf)
     (delete-file tmpfile)))
 
+;;;###autoload
+(defun jsfmt ()
+  "Formats the current buffer according to the jsfmt tool."
+  (interactive)
+  (run-jsfmt t nil))
+
+;;;###autoload
+(defun jsfmt-save-ast ()
+  "Formats the current buffer according to the jsfmt ast tool."
+  (interactive)
+  (run-jsfmt t t))
+
+;;;###autoload
+(defun jsfmt-load-ast ()
+  "Formats the current buffer according to the jsfmt ast tool."
+  (interactive)
+  (run-jsfmt nil t))
+
 (defun jsfmt--process-errors (filename tmpfile errbuf)
   ;; Convert the jsfmt stderr to something understood by the compilation mode.
   (with-current-buffer errbuf
@@ -136,14 +163,45 @@ buffer."
 
 ;;;###autoload
 (defun jsfmt-before-save ()
-  "Add this to .emacs to run jsfmt on the current buffer when saving:
- (add-hook 'before-save-hook 'jsfmt-before-save).
-
-Note that this will cause js-mode to get loaded the first time
-you save any file, kind of defeating the point of autoloading."
-
+  "Add this to .emacs to run jsfmt on the current buffer before saving:
+ (add-hook 'before-save-hook 'jsfmt-before-save)."
   (interactive)
   (when (memq major-mode '(js-mode js2-mode js3-mode)) (jsfmt)))
+
+;;;###autoload
+(defun jsfmt-ast-before-save ()
+  "Add this to .emacs to run 'jsfmt --save-ast' on the buffer before saving
+ (add-hook 'before-save-hook 'jsfmt-ast-before-save)."
+  (interactive)
+  (when (memq major-mode '(js-mode js2-mode js3-mode)) (jsfmt-save-ast)))
+
+;;;###autoload
+(defun jsfmt-ast-find-file ()
+  "Add this to .emacs to run 'jsfmt --ast' on the file being loaded
+ (add-hook 'find-file-hook 'jsfmt-ast-find-file)."
+  (interactive)
+  (when (memq major-mode '(js-mode js2-mode js3-mode)) (jsfmt-load-ast)))
+
+;;;###autoload
+(defun jsfmt-ast-mode ()
+  "Add this to .emacs to run enabling jsfmt loading .ast files as javascript and saving
+   the javascript back as ast
+  (add-to-list 'auto-mode-alist '(\"\\.ast$\" . (lambda()
+                                                  (jsfmt-ast-mode)
+                                                  (js-mode))))"
+  (interactive)
+  ;; before saving convert to AST
+  (defvar jsfmt-current-line (line-number-at-pos))
+  (add-hook 'before-save-hook (lambda()
+                                (setq jsfmt-current-line (line-number-at-pos))
+                                (jsfmt-ast-before-save)))
+  ;; after saving convert buffer back to js for editing
+  (add-hook 'after-save-hook (lambda()
+                               (jsfmt-ast-find-file)
+                               (set-buffer-modified-p nil)
+                               (goto-line (symbol-value 'jsfmt-current-line))))
+  ;; when opening file convert from AST to js
+  (add-hook 'find-file-hook 'jsfmt-ast-find-file))
 
 (provide 'jsfmt)
 
