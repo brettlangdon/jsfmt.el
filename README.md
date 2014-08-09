@@ -26,8 +26,9 @@ Add the following to `~/.emacs` to run `jsfmt` before saving file:
 ```
 
 ### AST loading/saving
-`jsfmt` allows for saving/reading files as AST json files. To support this `jsfmt.el` offers
-a way to load `.ast` files as javascript and then save the javascript back to an AST on save.
+`jsfmt` (as of version `0.4.0`) allows for saving/reading files as AST json files. To support
+this `jsfmt.el` offers a way to load `.ast` files as javascript and then save the javascript
+back to an AST on save.
 
 To do so, add the folloing to your `.emacs` file:
 ```lisp
