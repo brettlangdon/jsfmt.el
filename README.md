@@ -3,7 +3,7 @@ jsfmt.el
 
 emacs plugin to allow running [jsfmt](https://rdio.github.io/jsfmt) on javascript files.
 
-this is basically a clone of the necessary code from `go-mode` for running `gofmt` but used `jsfmt` instead.
+This is basically a clone of the necessary code from `go-mode` for running `gofmt` but used `jsfmt` instead.
 
 ## Installing
 
@@ -23,6 +23,18 @@ Modify your `~/.emacs` file to include:
 Add the following to `~/.emacs` to run `jsfmt` before saving file:
 ```lisp
 (add-hook 'before-save-hook 'jsfmt-before-save)
+```
+
+### AST loading/saving
+`jsfmt` allows for saving/reading files as AST json files. To support this `jsfmt.el` offers
+a way to load `.ast` files as javascript and then save the javascript back to an AST on save.
+
+To do so, add the folloing to your `.emacs` file:
+```lisp
+(load "~/.emacs.d/jsfmt")
+(add-to-list 'auto-mode-alist '(\"\\.ast$\" . (lambda()
+                                                (jsfmt-ast-mode)
+                                                (js-mode))))"
 ```
 
 ## License
