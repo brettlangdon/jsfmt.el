@@ -19,6 +19,9 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (require 'cl))
+
 (defcustom jsfmt-command "jsfmt"
   "The 'jsfmt' command. https://rdio.github.io/jsfmt"
   :type 'string
@@ -88,7 +91,7 @@ buffer."
              (t
               (error "invalid rcs patch or internal error in js--apply-rcs-patch")))))))))
 
-(defun run-jsfmt (save &optional ast &optional)
+(defun run-jsfmt (save &optional ast)
   "Formats the current buffer according to the jsfmt tool."
   (interactive)
   (let ((tmpfile (make-temp-file "jsfmt" nil (if ast
@@ -110,25 +113,26 @@ buffer."
     ;; We're using errbuf for the mixed stdout and stderr output. This
     ;; is not an issue because jsfmt --write does not produce any stdout
     ;; output in case of success.
-    (if save
+    (let (success)
+      (if save
+          (if ast
+              (setq success (zerop (call-process jsfmt-command nil errbuf nil "--save-ast" "--write" tmpfile)))
+            (setq success (zerop (call-process jsfmt-command nil errbuf nil "--write" tmpfile))))
         (if ast
-            (setq success (zerop (call-process jsfmt-command nil errbuf nil "--save-ast" "--write" tmpfile)))
-          (setq success (zerop (call-process jsfmt-command nil errbuf nil "--write" tmpfile))))
-      (if ast
-          (setq success (zerop (call-process jsfmt-command nil errbuf nil "--ast" "--write" tmpfile)))
+            (setq success (zerop (call-process jsfmt-command nil errbuf nil "--ast" "--write" tmpfile)))
+          (setq success nil))
         (setq success nil))
-      (setq success nil))
 
-    (if 'success
-        (if (zerop (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-" tmpfile))
-            (progn
-              (kill-buffer errbuf)
-              (message "Buffer is already jsfmted"))
-          (js--apply-rcs-patch patchbuf)
-          (kill-buffer errbuf)
-          (message "Applied jsfmt"))
-      (message "Could not apply jsfmt. Check errors for details")
-      (jsfmt--process-errors (buffer-file-name) tmpfile errbuf))
+      (if success
+          (if (zerop (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-" tmpfile))
+              (progn
+                (kill-buffer errbuf)
+                (message "Buffer is already jsfmted"))
+            (js--apply-rcs-patch patchbuf)
+            (kill-buffer errbuf)
+            (message "Applied jsfmt"))
+        (message "Could not apply jsfmt. Check errors for details")
+        (jsfmt--process-errors (buffer-file-name) tmpfile errbuf)))
 
     (kill-buffer patchbuf)
     (delete-file tmpfile)))
