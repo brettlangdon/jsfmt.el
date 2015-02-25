@@ -19,6 +19,9 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (require 'cl))
+
 (defcustom jsfmt-command "jsfmt"
   "The 'jsfmt' command. https://rdio.github.io/jsfmt"
   :type 'string
