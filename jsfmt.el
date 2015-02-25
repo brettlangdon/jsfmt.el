@@ -88,7 +88,7 @@ buffer."
              (t
               (error "invalid rcs patch or internal error in js--apply-rcs-patch")))))))))
 
-(defun run-jsfmt (save &optional ast &optional)
+(defun run-jsfmt (save &optional ast)
   "Formats the current buffer according to the jsfmt tool."
   (interactive)
   (let ((tmpfile (make-temp-file "jsfmt" nil (if ast
