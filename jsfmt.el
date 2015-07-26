@@ -24,17 +24,17 @@
   :type 'string
   :group 'js)
 
-(defun js--goto-line (line)
+(defun jsfmt--goto-line (line)
   (goto-char (point-min))
   (forward-line (1- line)))
 
-(defalias 'js--kill-whole-line
+(defalias 'jsfmt--kill-whole-line
   (if (fboundp 'kill-whole-line)
       #'kill-whole-line
     #'kill-entire-line))
 
 ;; Delete the current line without putting it in the kill-ring.
-(defun js--delete-whole-line (&optional arg)
+(defun jsfmt--delete-whole-line (&optional arg)
   ;; Emacs uses both kill-region and kill-new, Xemacs only uses
   ;; kill-region. In both cases we turn them into operations that do
   ;; not modify the kill ring. This solution does depend on the
@@ -43,9 +43,9 @@
   (flet ((kill-region (beg end)
                       (delete-region beg end))
          (kill-new (s) ()))
-    (js--kill-whole-line arg)))
+    (jsfmt--kill-whole-line arg)))
 
-(defun js--apply-rcs-patch (patch-buffer)
+(defun jsfmt--apply-rcs-patch (patch-buffer)
   "Apply an RCS-formatted diff from PATCH-BUFFER to the current
 buffer."
   (let ((target-buffer (current-buffer))
@@ -65,7 +65,7 @@ buffer."
         (goto-char (point-min))
         (while (not (eobp))
           (unless (looking-at "^\\([ad]\\)\\([0-9]+\\) \\([0-9]+\\)")
-            (error "invalid rcs patch or internal error in js--apply-rcs-patch"))
+            (error "invalid rcs patch or internal error in jsfmt--apply-rcs-patch"))
           (forward-line)
           (let ((action (match-string 1))
                 (from (string-to-number (match-string 2)))
@@ -82,11 +82,11 @@ buffer."
                     (insert text)))))
              ((equal action "d")
               (with-current-buffer target-buffer
-                (js--goto-line (- from line-offset))
+                (jsfmt--goto-line (- from line-offset))
                 (incf line-offset len)
-                (js--delete-whole-line len)))
+                (jsfmt--delete-whole-line len)))
              (t
-              (error "invalid rcs patch or internal error in js--apply-rcs-patch")))))))))
+              (error "invalid rcs patch or internal error in jsfmt--apply-rcs-patch")))))))))
 
 (defun run-jsfmt (save &optional ast &optional)
   "Formats the current buffer according to the jsfmt tool."
@@ -124,7 +124,7 @@ buffer."
             (progn
               (kill-buffer errbuf)
               (message "Buffer is already jsfmted"))
-          (js--apply-rcs-patch patchbuf)
+          (jsfmt--apply-rcs-patch patchbuf)
           (kill-buffer errbuf)
           (message "Applied jsfmt"))
       (message "Could not apply jsfmt. Check errors for details")
@@ -183,11 +183,11 @@ buffer."
   (when (memq major-mode '(js-mode js2-mode js3-mode)) (jsfmt-load-ast)))
 
 ;;;###autoload
-(defun jsfmt-ast-mode ()
+(defun jsfmt-ast ()
   "Add this to .emacs to run enabling jsfmt loading .ast files as javascript and saving
    the javascript back as ast
   (add-to-list 'auto-mode-alist '(\"\\.ast$\" . (lambda()
-                                                  (jsfmt-ast-mode)
+                                                  (jsfmt-ast)
                                                   (js-mode))))"
   (interactive)
   ;; before saving convert to AST
