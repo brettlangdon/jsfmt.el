@@ -40,7 +40,7 @@
   ;; not modify the kill ring. This solution does depend on the
   ;; implementation of kill-line, but it's the only viable solution
   ;; that does not require to write kill-line from scratch.
-  (flet ((kill-region (beg end)
+  (cl-flet ((kill-region (beg end)
                       (delete-region beg end))
          (kill-new (s) ()))
     (jsfmt--kill-whole-line arg)))
@@ -88,7 +88,7 @@ buffer."
              (t
               (error "invalid rcs patch or internal error in jsfmt--apply-rcs-patch")))))))))
 
-(defun run-jsfmt (save &optional ast &optional)
+(defun run-jsfmt (&optional save &optional ast)
   "Formats the current buffer according to the jsfmt tool."
   (interactive)
   (let ((tmpfile (make-temp-file "jsfmt" nil (if ast
