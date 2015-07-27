@@ -1,4 +1,4 @@
-;; jsfmt.el --- Interface to jsfmt command for javascript files
+;;; jsfmt.el --- Interface to jsfmt command for javascript files
 
 ;; Copyright (C) 2014 Brett Langdon
 
