@@ -34,7 +34,7 @@ To do so, add the folloing to your `.emacs` file:
 ```lisp
 (load "~/.emacs.d/jsfmt")
 (add-to-list 'auto-mode-alist '(\"\\.ast$\" . (lambda()
-                                                (jsfmt-ast-mode)
+                                                (jsfmt-ast)
                                                 (js-mode))))"
 ```
 
